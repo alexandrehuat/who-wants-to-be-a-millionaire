@@ -2,13 +2,16 @@
 
 # [UNDER DEV] _Qui veut gagner des millions ?_ personnalisable en Python pour jouer entre amis
 
-Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de gagner le million grâce à ce jeu fait pour du présentiel ou du distanciel ! Ce jeu est un prototype utilisé pour un [_Qui veut gagner des millions ?_](https://youtu.be/67fDyIkcDz4) édition spéciale [AQUILAB](https://wwww.aquilab.com) développé en Python par Alexandre Huat, Ing. Sc. des Données.
+Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de gagner le million grâce à ce jeu fait pour du présentiel ou du distanciel !
+
+Ce jeu est un prototype utilisé pour un [_Qui veut gagner des millions ?_](https://youtu.be/67fDyIkcDz4) _édition interne [AQUILAB](https://wwww.aquilab.com)_ développé en Python par Alexandre Huat, Ingénieur Scientifique des Données.
+Il est sous licence [Creative Commons Attribution – Utilisation Non-Commerciale – Partage dans les Mêmes Conditions (CC BY-NC-SA) 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1).
 
 ## Installation
 
 * Installez [Python 3.12](https://www.python.org/downloads/). 
 * Clonez le dépôt et ouvrez un terminal à sa racine.
-* Créez un environnement virtuel, activez-le et installez les dépendances. Commandes Shell sous Unix :
+* Créez un environnement virtuel, activez-le et installez les dépendances. Commandes Shell sous UNIX :
 ```shell
 # Création
 python3.12 -m pip install -U pip setuptools wheel venv
@@ -111,7 +114,3 @@ Ce jeu implique plusieurs acteurs humains et informatiques.
           * Les gains de JM tombent au dernier palier.
       * EP affiche les résultats de JM. JP remercie JM.
 * HP lance le générique de fin.
-
-## Licence
-
-[Qui veut gagner des millions ?](https://github.com/alexandrehuat/who-wants-to-be-a-millionaire) © 2024 par [Alexandre Huat](https://alexandrehuat.github.io/) est sous licence [Creative Commons Attribution – Utilisation Non-Commerciale – Partage dans les Mêmes Conditions (CC BY-NC-SA) 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)
