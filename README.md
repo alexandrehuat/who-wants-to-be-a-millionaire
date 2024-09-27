@@ -2,10 +2,9 @@
 
 # [UNDER DEV] _Qui veut gagner des millions ?_ personnalisable en Python pour jouer entre amis
 
-Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de gagner le million grâce à ce jeu fait pour du présentiel ou du distanciel !
-
-Ce jeu est un prototype utilisé pour un [_Qui veut gagner des millions ?_](https://youtu.be/67fDyIkcDz4) _édition interne [AQUILAB](https://wwww.aquilab.com)_ développé en Python par Alexandre Huat, Ingénieur Scientifique des Données.
-Il est sous licence [Creative Commons Attribution – Utilisation Non-Commerciale – Partage dans les Mêmes Conditions (CC BY-NC-SA) 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1).
+Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de gagner le million grâce à ce jeu en présentiel ou distanciel !
+Ce logiciel est une reconstruction de [_Qui veut gagner des millions ?_](https://youtu.be/67fDyIkcDz4) pour une édition spéciale en entreprise.
+Il est développé en Python par Alexandre Huat, Ingénieur Scientifique des Données, sous licence [Creative Commons Attribution – Utilisation Non-Commerciale – Partage dans les Mêmes Conditions (CC BY-NC-SA) 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1).
 
 ## Installation
 
