@@ -1,6 +1,6 @@
-🌐 Translate me from 🇫🇷 with [DeepL](https://www.deepl.com/)!
+🌐 Translate me from French with [Google](https://github-com.translate.goog/alexandrehuat/who-wants-to-be-a-millionaire/tree/main?_x_tr_sl=fr&_x_tr_tl=de&_x_tr_hl=fr&_x_tr_pto=wapp)!
 
-# [UNDER DEV] Un _Qui veut gagner des millions ?_ personnalisable en Python pour jouer entre amis
+# [UNDER DEV] _Qui veut gagner des millions ?_ personnalisable en Python pour jouer entre amis
 
 Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de gagner le million grâce à ce jeu fait pour du présentiel ou du distanciel ! Ce jeu est un prototype utilisé pour un [_Qui veut gagner des millions ?_](https://youtu.be/67fDyIkcDz4) édition spéciale [AQUILAB](https://wwww.aquilab.com) développé en Python par Alexandre Huat, Ing. Sc. des Données.
 
