@@ -1,0 +1,200 @@
+{
+  "millionaire_short": {
+    "fr": "QVGDM",
+    "en": "Millionaire"
+  },
+  "app_title": {
+    "fr": "Terminal d'animation",
+    "en": "Animation terminal"
+  },
+  "public_screen_title": {
+    "fr": "Qui veut gagner des millions ?",
+    "en": "Who wants to be a millionaire?"
+  },
+  "opening": {
+    "fr": "Générique de début",
+    "en": "Opening credits"
+  },
+  "closing": {
+    "fr": "Générique de fin",
+    "en": "Closing credits"
+  },
+  "start_qualif": {
+    "fr": "Qualifications",
+    "en": "Qualification phase"
+  },
+  "start_round": {
+    "fr": "Nouvelle partie",
+    "en": "New round"
+  },
+  "start_free_game": {
+    "fr": "Jeu libre",
+    "en": "Free game"
+  },
+  "toggle_lang": {
+    "fr": "\uD83C\uDDEB\uD83C\uDDF7 → \uD83C\uDDEC\uD83C\uDDE7",
+    "en": "\uD83C\uDDEC\uD83C\uDDE7 → \uD83C\uDDEB\uD83C\uDDF7"
+  },
+  "main_game": {
+    "fr": "Jeu principal",
+    "en": "Main game"
+  },
+  "main_menu": {
+    "fr": "Menu principal",
+    "en": "Main menu"
+  },
+  ":": {
+    "fr": " :",
+    "en": ":"
+  },
+  "level": {
+    "fr": "Niveau",
+    "en": "Level"
+  },
+  "trivial": {
+    "fr": "Trivial",
+    "en": "Trivial"
+  },
+  "easy": {
+    "fr": "Facile",
+    "en": "Easy"
+  },
+  "medium": {
+    "fr": "Médian",
+    "en": "Medium"
+  },
+  "hard": {
+    "fr": "Difficile",
+    "en": "Hard"
+  },
+  "extreme": {
+    "fr": "Extrême",
+    "en": "Extreme"
+  },
+  "milestone": {
+    "fr": "Palier",
+    "en": "Milestone"
+  },
+  "stage": {
+    "fr": "Stade",
+    "en": "Stage"
+  },
+  "qualif": {
+    "fr": "Qualifications",
+    "en": "Qualifications"
+  },
+  "beginning": {
+    "fr": "Début",
+    "en": "Beginning"
+  },
+  "first": {
+    "fr": "Premier",
+    "en": "First"
+  },
+  "second": {
+    "fr": "Deuxième",
+    "en": "Second"
+  },
+  "end": {
+    "fr": "Fin",
+    "en": "End"
+  },
+  "question": {
+    "fr": "Question",
+    "en": "Question"
+  },
+  "answer": {
+    "fr": "Réponse",
+    "en": "Answer"
+  },
+  "switch_action": {
+    "fr": "Changer",
+    "en": "Switch"
+  },
+  "walk_away": {
+    "fr": "Abandonner",
+    "en": "Walk away"
+  },
+  "publish": {
+    "fr": "Publier",
+    "en": "Publish"
+  },
+  "next": {
+    "fr": "Suivant",
+    "en": "Next"
+  },
+  "winnings": {
+    "fr": "Gains",
+    "en": "Winnings"
+  },
+  "winnings_stake": {
+    "fr": "Gains en jeu",
+    "en": "Winnings at stake"
+  },
+  "author": {
+    "fr": "Auteur",
+    "en": "Author"
+  },
+  "note": {
+    "fr": "Note",
+    "en": "Note"
+  },
+  "no_data": {
+    "fr": "N/A",
+    "en": "N/A"
+  },
+  "error": {
+    "fr": "Erreur",
+    "en": "Error"
+  },
+  "warning": {
+    "fr": "Avertissement",
+    "en": "Warning"
+  },
+  "QuestionUnderflow": {
+    "fr": "Toutes les questions de ce niveau ont déjà été suggérées au moins une fois.",
+    "en": "All the questions of this level were suggested at least once."
+  },
+  "jokers": {
+    "fr": "Jokers",
+    "en": "Jokers"
+  },
+  "fifty": {
+    "icon": "↔\uFE0F",
+    "fr": "50:50",
+    "en": "50:50"
+  },
+  "friend": {
+    "icon": "\uD83D\uDCDE",
+    "fr": "Appel à un ami",
+    "en": "Ask a friend"
+  },
+  "audience": {
+    "icon": "\uD83D\uDC65",
+    "fr": "Vote du public",
+    "en": "Audience's vote"
+  },
+  "switch": {
+    "icon": "\uD83D\uDD04",
+    "fr": "Changement",
+    "en": "Switch"
+  },
+  "animator": {
+    "icon": "\uD83E\uDD35\uD83C\uDFFB\u200D♂\uFE0F",
+    "fr": "Avis de l'animateur",
+    "en": "Animator's opinion"
+  },
+  "expert": {
+    "icon": "\uD83D\uDE4B\uD83C\uDFFC\u200D♀\uFE0F",
+    "fr": "Avis d'expert",
+    "en": "Expert opinion"
+  },
+  "DisabledJoker": {
+    "fr": "Ce joker ne peut pas être joué.",
+    "en": "This joker cannot be played."
+  },
+  "JokersDisabledForQLevel": {
+    "fr": "Les jokers sont désactivés pour ce niveau de question.",
+    "en": "Jokers are disabled for this question level."
+  }
+}
