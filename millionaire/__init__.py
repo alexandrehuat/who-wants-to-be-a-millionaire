@@ -1,4 +1,5 @@
 import json
+import random
 from enum import IntEnum, StrEnum
 
 from env import RSC_DIR
@@ -18,6 +19,19 @@ class Stage(IntEnum):
     END = 3
 
 
+class Joker(StrEnum):
+    FIFTY = "fifty"
+    FRIEND = "friend"
+    AUDIENCE = "audience"
+    SWITCH = "switch"
+    ANIMATOR = "animator"
+    EXPERT = "expert"
+
+
+CLASSICAL_JOKERS = (Joker.FIFTY, Joker.FRIEND, Joker.AUDIENCE)
+ADDITIONAL_JOKERS = tuple(set(Joker).difference(CLASSICAL_JOKERS))
+
+
 class Milestones:
     """Handles milestones relatively to the question number."""
 
@@ -29,6 +43,7 @@ class Milestones:
         elif first is None or second is None:
             raise ValueError("'first' and 'second' must be both none or both integers")
         self._data = int(first), int(second), _end
+        self._add_jokers = random.sample(range(3), 2)
 
     @property
     def safe_nets(self) -> tuple[int, int, int]:
@@ -86,10 +101,10 @@ class Milestones:
                 return stages[i]
         return stages[-1]
 
-    def allows_question(self, quest: Question, num: int) -> bool:
+    def allows_question(self, question: Question, num: int) -> bool:
         if self.is_ended(num):
             raise NotImplementedError(f"{num=} is not supposed to be greater than {self.end}")
-        lvl = quest.level
+        lvl = question.level
         qualif = self.in_qualif(num)
         return (lvl == QLevel.EXTREME and qualif
                 or lvl == QLevel.TRIVIAL and not qualif
@@ -97,14 +112,12 @@ class Milestones:
                 or lvl == QLevel.MEDIUM and self.in_second_stage(num)
                 or lvl == QLevel.HARD and self.in_last_stage(num))
 
-
-class Joker(StrEnum):
-    FIFTY = "fifty"
-    FRIEND = "friend"
-    AUDIENCE = "audience"
-    SWITCH = "switch"
-    ANIMATOR = "animator"
-    EXPERT = "expert"
+    def allowed_jokers(self, num: int) -> set[Joker]:
+        jokers = set(CLASSICAL_JOKERS)
+        for stone, joker in zip(self._data, self._add_jokers):
+            if num > stone:
+                jokers.add(ADDITIONAL_JOKERS[joker])
+        return jokers
 
 
 def translate(key, lang="fr"):

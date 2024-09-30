@@ -48,11 +48,11 @@ Les colonnes sont interprétées de cette manière (de gauche à droite) :
 4. Une 2ème mauvaise réponse
 5. Une 3ème mauvaise réponse
 6. Le niveau de difficulté (nombre), lié aux paliers du jeu :
-   * 1 = facile ;
-   * 2 = médian ;
-   * 3 = difficile.
-   * 0 = trivial mais humoristique : bien répondre n'augmente pas les gains et le nombre de questions passés, mais mal répondre fait perdre comme d'habitude ;
-7. Si la question peut être utilisée en qualification ou non : cellule non-vide = oui.
+   * 0 : trivial (et humoristique), sans incidence sur les gains ;
+   * 1 : facile ;
+   * 2 : médian ;
+   * 3 : difficile ;
+   * 4 : extrême, pour la phase de qualifications.
 8. L'auteur de la question
 9. Une note qui permet de comprendre le contexte ou la réponse : affichée uniquement sur TC en jeu.
 

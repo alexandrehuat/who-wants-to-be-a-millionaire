@@ -4,7 +4,7 @@ The animator's hidden terminal.
 import re
 import tkinter as tk
 
-from millionaire import QLevel, Stage, Joker
+from millionaire import Stage, Joker
 from millionaire.display import Theme, MillionaireWidget
 
 
@@ -117,27 +117,34 @@ class AnimationTerminal(MillionaireWidget, tk.Tk):
     def update_winnings(self):
         n = self.game.question_num
         for i, button in enumerate(self._win_btns):
-            button.config(highlightbackground=self.cget("bg"))
-        self._win_btns[n].config(highlightbackground=Theme["color"]["base"])
+            if i < n:
+                color = Theme["color"]["valid"]
+            elif i == n:
+                color = Theme["color"]["base"]
+            else:
+                color = self.cget("bg")
+            button.config(highlightbackground=color)
 
     def update_jokers(self):
-        for j, button in self._joker_btns.items():
-            button.config(highlightbackground=Theme["color"]["bg"],
-                          command=lambda j=j: self.game.restore_jokers(j))
-        for j in self.game.jokers:
-            button = self._joker_btns[j]
-            button.config(highlightbackground=Theme["color"]["base"],
-                          command=lambda j=j: self.game.play_joker(j))
+        for joker, button in self._joker_btns.items():
+            button.config(command=lambda joker=joker: self.game.restore_jokers(joker),
+                          highlightbackground=Theme["color"]["bg"])
+        for joker in self.game.jokers:
+            button = self._joker_btns[joker]
+            button.config(command=lambda joker=joker: self.game.play_joker(joker),
+                          highlightbackground=Theme["color"]["base"])
 
     def _create_answer_button(self, master: tk.Widget, index: int):
-        kws = self.DFT_WIDGET_KWS | dict(anchor="w", highlightbackground=Theme["color"]["base"])
-        return tk.Button(master, textvariable=self._answs[index], **kws)
+        kws = self.DFT_WIDGET_KWS | dict(anchor="w")
+        return tk.Button(master, textvariable=self._answs[index], **kws,
+                         command=lambda: self.game.publish_question(index + 1))
 
     def _create_quest_widgets(self, master: tk.Widget):
         self._quest = tk.StringVar(master)
         wraplen = 7 * self.winfo_width() // 8
-        kws = self.DFT_WIDGET_KWS | dict(wraplength=wraplen, anchor="w", bg=Theme["color"]["base"])
-        self._quest_label = tk.Label(master, textvariable=self._quest, **kws)
+        kws = self.DFT_WIDGET_KWS | dict(wraplength=wraplen, anchor="c")
+        self._quest_btn = tk.Button(master, textvariable=self._quest,
+                                    command=lambda: self.game.publish_question(0), **kws)
         self._answs, self._answ_btns = [], []
         for i in range(4):
             strvar = tk.StringVar(master)
@@ -145,7 +152,7 @@ class AnimationTerminal(MillionaireWidget, tk.Tk):
             button = self._create_answer_button(master, i)
             self._answ_btns.append(button)
 
-    def _create_question_actions(self, master: tk.Widget) -> list[tk.Button]:
+    def _create_quest_actions(self, master: tk.Widget) -> list[tk.Button]:
         buttons = []
         game = self.game
         qualif = game.in_qualif
@@ -170,14 +177,14 @@ class AnimationTerminal(MillionaireWidget, tk.Tk):
         self._create_quest_widgets(frame)
         self._note = tk.StringVar(frame)
         note = tk.Label(frame, textvariable=self._note, anchor="w", **self.DFT_WIDGET_KWS)
-        action_btns = self._create_question_actions(frame)
+        action_btns = self._create_quest_actions(frame)
 
         kws = self.DFT_GRID_KWS | dict(columnspan=2)
         author.grid(column=0, row=0, **kws)
         level.grid(column=0, row=1, **kws)
 
         kws["pady"] = (self.PAD, 0)
-        self._quest_label.grid(column=0, row=2, **kws)
+        self._quest_btn.grid(column=0, row=2, **kws)
         for i, button in enumerate(self._answ_btns):
             r, c = divmod(i, 2)
             button.grid(column=c, row=3 + r, **self.DFT_GRID_KWS)
@@ -207,20 +214,24 @@ class AnimationTerminal(MillionaireWidget, tk.Tk):
     def load_question(self):
         if not self.game.in_qualif:
             self.update_winnings()
+            self.update_jokers()
         self._load_quest_auth_lvl()
-        self._load_answers()
+        self._load_quest_answs()
         self._load_quest_note()
 
-    def _load_answers(self):
+    def _load_quest_answs(self):
         game = self.game
         quest = game.question
-        color = Theme["color"]["disabled" if quest.level == QLevel.TRIVIAL else "base"]
+
+        def getkws(index):
+            return dict(command=lambda: self.game.publish_question(index + 1),
+                        state=tk.NORMAL, highlightbackground=Theme["color"]["disabled"])
+
         self._quest.set(quest)
-        self._quest_label.config(bg=color)
+        self._quest_btn.config(**getkws(-1))
         for i, answ in enumerate(quest.mixed_answers):
-            self._answs[i].set(f" ◆ {chr(65 + i)}. {answ} ")
-            cmd = lambda i=i: game.ask_final_answer(i)
-            self._answ_btns[i].config(command=cmd, state=tk.NORMAL, highlightbackground=color)
+            self._answs[i].set(f" ◆ {chr(65 + i)}{self._ts(":")} {answ} ")
+            self._answ_btns[i].config(**getkws(i))
 
     def _load_quest_auth_lvl(self):
         quest = self.game.question
@@ -233,17 +244,34 @@ class AnimationTerminal(MillionaireWidget, tk.Tk):
             note = self._ts("no_data")
         self._note.set(f'{self._ts("note")}{self._ts(":")} {note}')
 
+    def publish_question(self, n_answers: int = -1):
+        def getkws(index):
+            color = "base" if n_answers > index else "disabled"
+            if index >= 0 and n_answers >= 4:
+                cmd = lambda: self.game.ask_final_answer(index)
+            else:
+                cmd = lambda: self.game.publish_question(index + 1)
+            return dict(command=cmd, state=tk.NORMAL, highlightbackground=Theme["color"][color])
+
+        quest = self.game.question
+        self._quest.set(quest)
+        self._quest_btn.config(**getkws(-1))
+        for i in range(len(quest.mixed_answers)):
+            self._answ_btns[i].config(**getkws(i))
+
     def ask_final_answer(self):
-        self._load_answers()  # Resets colors and commands if the player switches the answer choice
-        game = self.game
-        index = game.final_answer_index
-        button = self._answ_btns[index]
-        cmd = game.reveal_qualif if game.in_qualif else game.confirm_answer
-        button.config(command=cmd, highlightbackground=Theme["color"]["warning"])
+        for i, button in enumerate(self._answ_btns):
+            if i == self.game.final_answer_index:
+                cmd = self.game.confirm_answer
+                color = "warning"
+            else:
+                cmd = lambda i=i: self.game.ask_final_answer(i)
+                color = "base"
+            button.config(command=cmd, state=tk.NORMAL, highlightbackground=Theme["color"][color])
 
     def reveal_answer(self):
-        game = self.game
-        colors = {game.final_answer_index: "error", game.question.right_index: "valid"}
+        colors = {self.game.final_answer_index: "error",
+                  self.game.question.right_index: "valid"}
         for i, color in colors.items():
             self._answ_btns[i].config(highlightbackground=Theme["color"][color])
 

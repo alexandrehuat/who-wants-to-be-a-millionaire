@@ -2,22 +2,17 @@ from millionaire import util, translate
 
 Theme = {"color":
     {
-        "aql": [
-            "#ED8E5B",
-            "#4088AF",
-            "#1D4A8A",
-            "#882E7A",
-        ],
-        "base": "purple",
-        "altbase": "royal blue",
+        "base": "deepskyblue3",
+        "altbase": "purple3",
         "valid": "green",
         "error": "red",
         "warning": "orange",
         "disabled": "gray",
         "winnings": {
-            "first": "light goldenrod",
-            "second": "goldenrod",
-            "last": "dark goldenrod",
+            "first": "darkgoldenrod3",
+            "second": "darkgoldenrod2",
+            "last": "darkgoldenrod1",
+            "safe_net": "palegoldenrod",
         },
         "bg": "black",
     }

@@ -4,7 +4,7 @@ Mixes the model with the controller in the MVC design pattern.
 """
 
 import csv
-import random
+import time
 
 from env import QUESTION_FILE, WINNINGS_FILE
 from millionaire import *
@@ -22,12 +22,16 @@ from millionaire.sound import SoundPlayer
 
 
 class Game:
-    def __init__(self, lang: str = "fr", milestones: Milestones = Milestones.twelve_balanced()):
+    def __init__(self, lang: str = "fr",
+                 milestones: Milestones = Milestones.twelve_balanced(),
+                 question_time: int = 30):
         self._lang = lang
         self.milestones = milestones
+        self.question_timeout = question_time
+
         self.init_question_data()
         self._init_winnings()
-        self._soundp = SoundPlayer()
+        self._soundp = SoundPlayer(self)
         self._init_display()
         self.start_round()
 
@@ -131,14 +135,21 @@ class Game:
         return self.milestones.stage(self.question_num)
 
     @property
+    def question_timeout(self) -> int:
+        return self._qtimeout
+
+    @question_timeout.setter
+    def question_timeout(self, value: int):
+        self._qtimeout = int(value)
+
+    @property
     def question_num(self) -> int:
         return self._qnum
 
     def set_question_num(self, num: int, force: bool = False):
         if force or num != self._qnum:
-            self.sound_player.stop()
             self._qnum = num
-            self.sound_player.stage = self.stage
+            self.sound_player.stop()
             self._restack_qtoask()
             self.load_question()
 
@@ -152,17 +163,13 @@ class Game:
     def in_qualif(self) -> bool:
         return self.milestones.in_qualif(self.question_num)
 
-    def reveal_qualif(self):
-        self.sound_player.win()
-        self.reveal_answer()
-
-    def reveal_answer(self):
+    def display_reveal_answer(self):
         self.animation_terminal.reveal_answer()
         self.public_screen.reveal_answer()
 
     def start_round(self):
         self._qnum = 0
-        self._jokers = set(Joker)
+        self._played_jokers = set()
         self.animation_terminal.start_round()
         self.set_question_num(0, force=True)
 
@@ -170,8 +177,11 @@ class Game:
         raise NotImplementedError("TODO")
 
     @property
-    def question(self) -> Question:
-        return self._qdata[self._qpicked[-1]]
+    def question(self) -> Question | None:
+        try:
+            return self._qdata[self._qpicked[-1]]
+        except IndexError:
+            return None
 
     def _qpick(self):
         self._qpicked.append(self._qtoask.pop())
@@ -182,6 +192,8 @@ class Game:
         self._qpicked = []
 
     def load_question(self):
+        self._run_qtimer = False
+        self._pub_answs = -1
         try:
             self._qpick()
             while not self.milestones.allows_question(self.question, self._qnum):
@@ -189,15 +201,49 @@ class Game:
         except IndexError:  # No more questions to pick
             self.animation_terminal.raise_exc(QuestionUnderflowWarning)
             self._restack_qtoask()
-        self._joker_ind = []
+        self._joker_fifty_ind = None
         self.question.shuffle()
         self.animation_terminal.load_question()
 
-    def publish_question(self):
-        self.public_screen.show_question()
-        self.public_screen.show_jokers()
-        self.public_screen.show_winnings()
-        self.sound_player.question()
+    def publish_question(self, n_answers: int = None):
+        if n_answers is None:
+            n_answers = self._pub_answs + 1
+        self._pub_answs = max(-1, min(n_answers, 4))
+        self.animation_terminal.publish_question(self._pub_answs)
+        self.public_screen.show(self._pub_answs)
+        if not self.sound_player.is_playing_question_stage(self.stage):
+            self.sound_player.question()
+
+        if n_answers < 4:
+            self._qcountup = 0
+            self.public_screen.update_question_timer()
+        elif not self._run_qtimer:
+            self._run_qtimer = True
+            self._qtimestart = time.time()
+            self.start_question_timer()
+
+    REFRESH_RATE = int(1000 / 60)
+
+    def start_question_timer(self):
+        if self._run_qtimer:
+            self._qcountup = time.time() - self._qtimestart
+            self.public_screen.update_question_timer()
+            if self._qcountup >= self._qtimeout:
+                self.sound_player.reveal_qualif()
+                self.public_screen.update_question_timer()
+                self._run_qtimer = False
+            else:
+                if not self.sound_player.is_playing_question_stage(self.stage):
+                    self.sound_player.question()
+                self.animation_terminal.after(self.REFRESH_RATE, self.start_question_timer)
+
+    @property
+    def question_countdown(self) -> float:
+        return self._qtimeout - self._qcountup
+
+    @property
+    def question_time_progress(self) -> float:
+        return self._qcountup / self._qtimeout
 
     def ask_final_answer(self, index: int):
         self._final_answ_ind = index
@@ -221,13 +267,15 @@ class Game:
             self.public_screen.loss()
 
     def confirm_answer(self):
-        self.reveal_answer()
+        self._run_qtimer = False
+        self.display_reveal_answer()
         if self.question.level != QLevel.TRIVIAL:
             right = self.question.check_answer(self.final_answer_index)
-            if self.milestones.is_ended(self.question_num + 1) or not right:
-                self._stop_round(right)
-            else:
+            next_ends = self.milestones.is_ended(self.question_num + 1)
+            if self.in_qualif or right or next_ends:
                 self.sound_player.win()
+            else:
+                self._stop_round(right)
 
     def next_question(self):
         if self.in_qualif:
@@ -237,21 +285,24 @@ class Game:
             self.set_question_num(num)
 
     def restore_jokers(self, joker: Joker):
-        self._jokers.add(joker)
+        self._played_jokers.remove(joker)
+        if joker == Joker.FIFTY:
+            self._joker_fifty_ind = None
         self.animation_terminal.update_jokers()
+        self.public_screen.show()
 
     def _play_joker_fifty(self):
         wrong_inds = self.question.wrong_indices()
         half = (len(wrong_inds) + 1) // 2
-        self._joker_ind = random.sample(wrong_inds, half)
+        self._joker_fifty_ind = random.sample(wrong_inds, half)
         self.animation_terminal.play_joker_fifty()
         self.public_screen.show_question()
 
     @property
     def joker_indices(self) -> tuple[int]:
         try:
-            return tuple(self._joker_ind)
-        except AttributeError:
+            return tuple(self._joker_fifty_ind)
+        except (AttributeError, TypeError):
             return tuple()
 
     def play_joker(self, joker: Joker):
@@ -259,7 +310,7 @@ class Game:
             self.animation_terminal.raise_exc(JokersDisabledForQLevelError)
         else:
             try:
-                self._jokers.remove(joker)
+                self._played_jokers.add(joker)
                 match joker:
                     case Joker.FIFTY:
                         self._play_joker_fifty()
@@ -272,11 +323,9 @@ class Game:
                 raise DisabledJokerError(joker)
 
     @property
-    def jokers(self) -> tuple[Joker]:
-        try:
-            return tuple(self._jokers)
-        except AttributeError:
-            return tuple()
+    def jokers(self) -> tuple[Joker, ...]:
+        jokers = self.milestones.allowed_jokers(self.question_num)
+        return tuple(jokers.difference(self._played_jokers))
 
     def walk_away(self):
         self.sound_player.stop()

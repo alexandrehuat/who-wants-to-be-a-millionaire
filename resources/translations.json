@@ -159,6 +159,14 @@
     "fr": "Jokers",
     "en": "Jokers"
   },
+  "classical": {
+    "fr": "Classiques",
+    "en": "Classical"
+  },
+  "additional": {
+    "fr": "Additionnels",
+    "en": "Additional"
+  },
   "fifty": {
     "icon": "↔\uFE0F",
     "fr": "50:50",

@@ -8,7 +8,7 @@ from pygame import mixer
 
 mixer.init()
 
-from millionaire import Stage, Joker
+from millionaire import Joker, Stage
 from env import SOUND_DIR
 
 
@@ -16,10 +16,11 @@ class SoundPlayer:
     LONG_FADE_MS = 5000
     SHORT_FADE_MS = 700
 
-    def __init__(self, stage: Stage = Stage.QUALIF):
-        self.stage = stage
+    def __init__(self, game):
+        self.game = game
 
     def _play(self, *path, **kwargs):
+        self._qplay_stage = self.game.stage if "question" in path else None
         path = SOUND_DIR.joinpath("/".join(path)).with_suffix(".mp3")
         self.stop()
         try:
@@ -28,15 +29,7 @@ class SoundPlayer:
                 kwargs["fade_ms"] = kwargs.get("fade_ms", self.LONG_FADE_MS)
             self._sound.play(**kwargs)
         except FileNotFoundError:
-            pass
-
-    @property
-    def stage(self):
-        return self._stage
-
-    @stage.setter
-    def stage(self, value: Stage):
-        self._stage = Stage(value)
+            self._qplay_stage = None
 
     def stop(self):
         try:
@@ -63,30 +56,32 @@ class SoundPlayer:
     def win_qualif(self):
         self._play("stage", "qualif", "win")
 
-    def _qrel_sound(self, name: str, stage: Stage = None) -> str:
-        """
-        Question related sounds
-        """
-        parts = ["stage", stage.name.lower(), name]
-        return "/".join(parts)
+    def _qsound(self, name: str) -> tuple[str, ...]:
+        return "stage", self.game.stage.name.lower(), name
 
     def question(self):
-        self._play(self._qrel_sound("question", self.stage))
+        self._play(*self._qsound("question"))
+
+    def is_playing_question_stage(self, stage: Stage) -> bool:
+        try:
+            return mixer.get_busy() and self._qplay_stage == stage
+        except AttributeError:
+            return False
 
     def reveal_qualif_answers(self):
-        self._play(self._qrel_sound("reveal", Stage.QUALIF))
+        self._play(*self._qsound("reveal"))
 
     def win(self):
-        self._play(self._qrel_sound("win", self.stage))
+        self._play(*self._qsound("win"))
 
     def loss(self):
-        self._play(self._qrel_sound("loss", self.stage))
+        self._play(*self._qsound("loss"))
 
     def walk_away(self):
-        self._play(self._qrel_sound("walk_away", self.stage))
+        self._play(*self._qsound("walk_away"))
 
     def final_answer(self):
-        self._play(self._qrel_sound("final_answer", self.stage))
+        self._play(*self._qsound("final_answer"))
 
     JOKER_REPL = {Joker.SWITCH: Joker.FIFTY,
                   Joker.EXPERT: Joker.FRIEND}
