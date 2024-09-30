@@ -1,6 +1,7 @@
 """
 The public display.
 """
+import sys
 import tkinter as tk
 from tkinter import font as tf
 
@@ -95,19 +96,22 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         expf.pack(expand=True)
         return frame
 
-    def _create_quest_timebar(self, master: tk.Widget):
-        height = 2 * self.PAD
-        self._qtimecv = tk.Canvas(master, width=360, height=height, bg=Theme["color"]["bg"])
-        self._qtimebar = self._qtimecv.create_rectangle(0, 0, 0, height, fill=Theme["color"]["valid"])
+    def _create_quest_timebar(self, master: tk.Widget, horizontal: bool = True):
+        width, height = 360, 2 * self.PAD
+        if not horizontal:
+            width, height = height, width
+        self._qtimecv = tk.Canvas(master, width=width, height=height, bg=Theme["color"]["bg"])
+        fill = 2 ** 16  # Large value for filling
+        self._qtimebar = self._qtimecv.create_rectangle(0, 0, fill, fill)
         self._qtimecv.grid(column=0, columnspan=2, row=3, **self.DFT_GRID_KWS)
 
     def update_question_timer(self):
-        coords = self._qtimecv.coords(self._qtimebar)
         progress = self.game.question_time_progress
-        coords[2] = progress * self._qtimecv.winfo_width()
-        self._qtimecv.coords(self._qtimebar, *coords)
-        color = "valid" if progress < 2 / 3 else "warning" if progress < 1 else "error"
+        color = "base" if progress < 2 / 3 else "altbase" if progress < 1 else "bg"
         self._qtimecv.itemconfig(self._qtimebar, fill=Theme["color"][color])
+        coords = self._qtimecv.coords(self._qtimebar)
+        coords[0] = progress * self._qtimecv.winfo_width()
+        self._qtimecv.coords(self._qtimebar, *coords)
 
     def _create_jokers_frame(self):
         frame = self._create_label_frame("jokers")

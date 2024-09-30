@@ -136,6 +136,8 @@ class Game:
 
     @property
     def question_timeout(self) -> int:
+        if self.in_qualif:
+            return self.sound_player.question_length()
         return self._qtimeout
 
     @question_timeout.setter
@@ -208,10 +210,12 @@ class Game:
     def publish_question(self, n_answers: int = None):
         if n_answers is None:
             n_answers = self._pub_answs + 1
+        if pub_qualif_answs := self.in_qualif and n_answers > 0:
+            n_answers = 4
         self._pub_answs = max(-1, min(n_answers, 4))
         self.animation_terminal.publish_question(self._pub_answs)
         self.public_screen.show(self._pub_answs)
-        if not self.sound_player.is_playing_question_stage(self.stage):
+        if pub_qualif_answs and not self.sound_player.is_playing_question_stage(self.stage):
             self.sound_player.question()
 
         if n_answers < 4:
@@ -228,29 +232,28 @@ class Game:
         if self._run_qtimer:
             self._qcountup = time.time() - self._qtimestart
             self.public_screen.update_question_timer()
-            if self._qcountup >= self._qtimeout:
-                self.sound_player.reveal_qualif()
+            if self._qcountup >= self.question_timeout:
+                if not self.in_qualif:
+                    self.sound_player.reveal_qualif()
                 self.public_screen.update_question_timer()
                 self._run_qtimer = False
             else:
-                if not self.sound_player.is_playing_question_stage(self.stage):
-                    self.sound_player.question()
                 self.animation_terminal.after(self.REFRESH_RATE, self.start_question_timer)
 
     @property
     def question_countdown(self) -> float:
-        return self._qtimeout - self._qcountup
+        return self.question_timeoutn - self._qcountup
 
     @property
     def question_time_progress(self) -> float:
-        return self._qcountup / self._qtimeout
+        return self._qcountup / self.question_timeout
 
     def ask_final_answer(self, index: int):
         self._final_answ_ind = index
         self.animation_terminal.ask_final_answer()
         self.public_screen.ask_final_answer()
         if self.in_qualif:
-            self.sound_player.reveal_qualif()
+            self.sound_player.reveal_answers()
         else:
             self.sound_player.final_answer()
 
@@ -324,8 +327,12 @@ class Game:
 
     @property
     def jokers(self) -> tuple[Joker, ...]:
-        jokers = self.milestones.allowed_jokers(self.question_num)
-        return tuple(jokers.difference(self._played_jokers))
+        try:
+            played = self._played_jokers
+            jokers = self.milestones.allowed_jokers(self.question_num)
+            return tuple(jokers.difference(played))
+        except AttributeError:
+            return tuple()
 
     def walk_away(self):
         self.sound_player.stop()

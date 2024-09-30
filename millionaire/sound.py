@@ -4,12 +4,14 @@ Sound management
 
 __all__ = ["SoundPlayer"]
 
+from pathlib import Path
+
 from pygame import mixer
 
-mixer.init()
-
-from millionaire import Joker, Stage
 from env import SOUND_DIR
+from millionaire import Joker, Stage
+
+mixer.init()
 
 
 class SoundPlayer:
@@ -19,9 +21,12 @@ class SoundPlayer:
     def __init__(self, game):
         self.game = game
 
-    def _play(self, *path, **kwargs):
-        self._qplay_stage = self.game.stage if "question" in path else None
-        path = SOUND_DIR.joinpath("/".join(path)).with_suffix(".mp3")
+    def _get_path(self, *parts) -> Path:
+        return SOUND_DIR.joinpath("/".join(parts)).with_suffix(".mp3")
+
+    def _play(self, *path_parts, **kwargs):
+        self._qplay_stage = self.game.stage if "question" in path_parts else None
+        path = self._get_path(*path_parts)
         self.stop()
         try:
             self._sound = mixer.Sound(str(path))
@@ -30,6 +35,10 @@ class SoundPlayer:
             self._sound.play(**kwargs)
         except FileNotFoundError:
             self._qplay_stage = None
+
+    def question_length(self):
+        path = self._get_path(*self._qsound("question"))
+        return mixer.Sound(path).get_length()
 
     def stop(self):
         try:
@@ -68,7 +77,7 @@ class SoundPlayer:
         except AttributeError:
             return False
 
-    def reveal_qualif_answers(self):
+    def reveal_answers(self):
         self._play(*self._qsound("reveal"))
 
     def win(self):
