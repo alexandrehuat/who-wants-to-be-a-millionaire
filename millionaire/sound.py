@@ -9,7 +9,7 @@ from pathlib import Path
 from pygame import mixer
 
 from env import SOUND_DIR
-from millionaire import Joker, Stage
+from millionaire import Joker, Stage, Question
 
 mixer.init()
 
@@ -36,8 +36,14 @@ class SoundPlayer:
         except FileNotFoundError:
             self._qplay_stage = None
 
-    def question_length(self):
-        path = self._get_path(*self._qsound("question"))
+    def get_length(self, kind: type | Joker) -> float:
+        if isinstance(kind, type) and issubclass(kind, Question):
+            parts = self._qsound("question")
+        elif kind == Joker.FRIEND:
+            parts = self._joksound(kind)
+        else:
+            raise ValueError(f"unsupported kind {kind!r}")
+        path = self._get_path(*parts)
         return mixer.Sound(path).get_length()
 
     def stop(self):
@@ -95,9 +101,12 @@ class SoundPlayer:
     JOKER_REPL = {Joker.SWITCH: Joker.FIFTY,
                   Joker.EXPERT: Joker.FRIEND}
 
-    def joker(self, name: Joker):
-        if name in [Joker.ANIMATOR, Joker.EXPERT]:
+    def _joksound(self, joker: Joker) -> tuple[str, ...]:
+        joker = self.JOKER_REPL.get(joker, joker)
+        return "joker", joker.value.lower()
+
+    def joker(self, joker: Joker):
+        if joker in [Joker.ANIMATOR, Joker.EXPERT]:
             self.stop()
         else:
-            name = self.JOKER_REPL.get(name, name)
-            self._play("joker", name.value.lower())
+            self._play(*self._joksound(joker))

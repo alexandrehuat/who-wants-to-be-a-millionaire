@@ -24,7 +24,7 @@ from millionaire.sound import SoundPlayer
 class Game:
     def __init__(self, lang: str = "fr",
                  milestones: Milestones = Milestones.twelve_balanced(),
-                 question_time: int = 30):
+                 question_time: int = 180):
         self._lang = lang
         self.milestones = milestones
         self.question_timeout = question_time
@@ -135,9 +135,9 @@ class Game:
         return self.milestones.stage(self.question_num)
 
     @property
-    def question_timeout(self) -> int:
+    def question_timeout(self) -> int | float:
         if self.in_qualif:
-            return self.sound_player.question_length()
+            return self.sound_player.get_length(Question)
         return self._qtimeout
 
     @question_timeout.setter
@@ -194,7 +194,7 @@ class Game:
         self._qpicked = []
 
     def load_question(self):
-        self._run_qtimer = False
+        self._stop_question_timer()
         self._pub_answs = -1
         try:
             self._qpick()
@@ -222,13 +222,14 @@ class Game:
             self._qcountup = 0
             self.public_screen.update_question_timer()
         elif not self._run_qtimer:
-            self._run_qtimer = True
-            self._qtimestart = time.time()
-            self.start_question_timer()
+            self._start_question_timer()
 
     REFRESH_RATE = int(1000 / 60)
 
-    def start_question_timer(self):
+    def _start_question_timer(self, restart: bool = True):
+        if restart:
+            self._run_qtimer = True
+            self._qtimestart = time.time()
         if self._run_qtimer:
             self._qcountup = time.time() - self._qtimestart
             self.public_screen.update_question_timer()
@@ -238,11 +239,11 @@ class Game:
                 self.public_screen.update_question_timer()
                 self._run_qtimer = False
             else:
-                self.animation_terminal.after(self.REFRESH_RATE, self.start_question_timer)
+                repeat = lambda: self._start_question_timer(False)
+                self.animation_terminal.after(self.REFRESH_RATE, repeat)
 
-    @property
-    def question_countdown(self) -> float:
-        return self.question_timeoutn - self._qcountup
+    def _stop_question_timer(self):
+        self._run_qtimer = False
 
     @property
     def question_time_progress(self) -> float:
@@ -270,7 +271,7 @@ class Game:
             self.public_screen.loss()
 
     def confirm_answer(self):
-        self._run_qtimer = False
+        self._stop_question_timer()
         self.display_reveal_answer()
         if self.question.level != QLevel.TRIVIAL:
             right = self.question.check_answer(self.final_answer_index)
@@ -317,6 +318,8 @@ class Game:
                 match joker:
                     case Joker.FIFTY:
                         self._play_joker_fifty()
+                    case Joker.FRIEND:
+                        self._start_joker_timer()
                     case Joker.SWITCH:
                         self.load_question()
                 self.animation_terminal.update_jokers()
@@ -324,6 +327,35 @@ class Game:
                 self.sound_player.joker(joker)
             except KeyError:
                 raise DisabledJokerError(joker)
+
+    @property
+    def joker_timeout(self):
+        return self.sound_player.get_length(Joker.FRIEND)
+
+    def _start_joker_timer(self, restart: bool = True):
+        if restart:
+            self._stop_question_timer()
+            self._run_joktimer = True
+            self._joktimestart = time.time()
+        if self._run_joktimer:
+            self._jokcountup = time.time() - self._joktimestart
+            self.public_screen.update_joker_timer()
+            if self._jokcountup >= self.joker_timeout:
+                self._stop_joker_timer()
+                self.public_screen.update_joker_timer()
+                self._run_qtimer = True
+                self._qtimestart += self._jokcountup
+                self._start_question_timer(False)
+            else:
+                repeat = lambda: self._start_joker_timer(False)
+                self.animation_terminal.after(self.REFRESH_RATE, repeat)
+
+    def _stop_joker_timer(self):
+        self._run_joktimer = False
+
+    @property
+    def joker_time_progress(self):
+        return self._jokcountup / self.joker_timeout
 
     @property
     def jokers(self) -> tuple[Joker, ...]:

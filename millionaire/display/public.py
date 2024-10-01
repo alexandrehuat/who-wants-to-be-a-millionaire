@@ -1,7 +1,6 @@
 """
 The public display.
 """
-import sys
 import tkinter as tk
 from tkinter import font as tf
 
@@ -91,32 +90,40 @@ class PublicScreen(MillionaireWidget, tk.Tk):
             button.grid(column=c, row=1 + r, **self.DFT_GRID_KWS)
             self._answ_btns.append(button)
 
-        self._create_quest_timebar(expf)
+        self._qtimecv, self._qtimerect = self._create_timebar(expf)
+        self._qtimecv.grid(column=3, row=1, rowspan=2, **self.DFT_GRID_KWS)
 
         expf.pack(expand=True)
         return frame
 
-    def _create_quest_timebar(self, master: tk.Widget, horizontal: bool = True):
-        width, height = 360, 2 * self.PAD
-        if not horizontal:
+    def _create_timebar(self, master: tk.Widget, vertical: bool = True):
+        width, height = 240, 2 * self.PAD
+        if vertical:
             width, height = height, width
-        self._qtimecv = tk.Canvas(master, width=width, height=height, bg=Theme["color"]["bg"])
-        fill = 2 ** 16  # Large value for filling
-        self._qtimebar = self._qtimecv.create_rectangle(0, 0, fill, fill)
-        self._qtimecv.grid(column=0, columnspan=2, row=3, **self.DFT_GRID_KWS)
+        canvas = tk.Canvas(master, width=width, height=height, bg=Theme["color"]["bg"])
+        fill = 2 ** 16  # Safely large value for filling
+        rectangle = canvas.create_rectangle(0, fill, fill, fill)
+        return canvas, rectangle
+
+    def _update_timebar(self, canvas: tk.Canvas, rectangle, progress):
+        color = "altbase" if progress < 2 / 3 else "warning" if progress < 1 else "error"
+        coords = canvas.coords(rectangle)
+        coords[1] = (1 - progress) * canvas.winfo_height()
+        canvas.itemconfig(rectangle, fill=Theme["color"][color])
+        canvas.coords(rectangle, *coords)
 
     def update_question_timer(self):
         progress = self.game.question_time_progress
-        color = "base" if progress < 2 / 3 else "altbase" if progress < 1 else "bg"
-        self._qtimecv.itemconfig(self._qtimebar, fill=Theme["color"][color])
-        coords = self._qtimecv.coords(self._qtimebar)
-        coords[0] = progress * self._qtimecv.winfo_width()
-        self._qtimecv.coords(self._qtimebar, *coords)
+        self._update_timebar(self._qtimecv, self._qtimerect, progress)
+
+    def update_joker_timer(self):
+        progress = self.game.joker_time_progress
+        self._update_timebar(self._joktimecv, self._joktimerect, progress)
 
     def _create_jokers_frame(self):
         frame = self._create_label_frame("jokers")
         expf = self._create_expand_frame(frame)
-        subframes = [self._create_label_frame("classical", expf),
+        subwids = [self._create_label_frame("classical", expf),
                      self._create_label_frame("additional", expf)]
 
         self._joker_btns = {}
@@ -124,11 +131,16 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         for i, joker in enumerate(Joker):
             column, row = divmod(i, 3)
             text = " ".join(["", self._ts(joker, "icon"), self._ts(joker)])
-            button = tk.Button(subframes[column], text=text, **kws)
+            button = tk.Button(subwids[column], text=text, **kws)
             button.grid(column=0, row=row, **self.DFT_GRID_KWS)
             self._joker_btns[joker] = button
-        for column, subframe in enumerate(subframes):
+
+        self._joktimecv, self._joktimerect = self._create_timebar(expf)
+
+        subwids.insert(1, self._joktimecv)
+        for column, subframe in enumerate(subwids):
             subframe.grid(column=column, row=0, **self.DFT_GRID_KWS)
+
         expf.pack(expand=True)
         return frame
 
