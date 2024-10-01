@@ -210,21 +210,20 @@ class Game:
     def publish_question(self, n_answers: int = None):
         if n_answers is None:
             n_answers = self._pub_answs + 1
-        if pub_qualif_answs := self.in_qualif and n_answers > 0:
+        pub_qualif_answs = self.in_qualif and n_answers > 0
+        if pub_qualif_answs:
             n_answers = 4
         self._pub_answs = max(-1, min(n_answers, 4))
         self.animation_terminal.publish_question(self._pub_answs)
         self.public_screen.show(self._pub_answs)
-        if pub_qualif_answs and not self.sound_player.is_playing_question_stage(self.stage):
+        if not self.sound_player.is_playing_question_stage(self.stage):
             self.sound_player.question()
 
-        if n_answers < 4:
-            self._qcountup = 0
-            self.public_screen.update_question_timer()
-        elif not self._run_qtimer:
+        self._reset_joker_timer()
+        if not self._run_qtimer:
             self._start_question_timer()
 
-    REFRESH_RATE = int(1000 / 60)
+    REFRESH_RATE = int(1000 / 30)
 
     def _start_question_timer(self, restart: bool = True):
         if restart:
@@ -330,7 +329,7 @@ class Game:
 
     @property
     def joker_timeout(self):
-        return self.sound_player.get_length(Joker.FRIEND)
+        return 30  # Ask a friend
 
     def _start_joker_timer(self, restart: bool = True):
         if restart:
@@ -341,21 +340,27 @@ class Game:
             self._jokcountup = time.time() - self._joktimestart
             self.public_screen.update_joker_timer()
             if self._jokcountup >= self.joker_timeout:
-                self._stop_joker_timer()
+                self._run_joktimer = False
                 self.public_screen.update_joker_timer()
-                self._run_qtimer = True
                 self._qtimestart += self._jokcountup
+                self._jokcountup = 0
+                self._run_qtimer = True
                 self._start_question_timer(False)
             else:
                 repeat = lambda: self._start_joker_timer(False)
                 self.animation_terminal.after(self.REFRESH_RATE, repeat)
 
-    def _stop_joker_timer(self):
+    def _reset_joker_timer(self):
         self._run_joktimer = False
+        self._jokcountup = 0
+        self.public_screen.update_joker_timer()
 
     @property
-    def joker_time_progress(self):
-        return self._jokcountup / self.joker_timeout
+    def joker_time_progress(self) -> float:
+        try:
+            return self._jokcountup / self.joker_timeout
+        except AttributeError:
+            return 0
 
     @property
     def jokers(self) -> tuple[Joker, ...]:
