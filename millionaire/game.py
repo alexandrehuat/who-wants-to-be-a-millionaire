@@ -9,7 +9,7 @@ import time
 from env import QUESTION_FILE, WINNINGS_FILE
 from millionaire import *
 from millionaire import QLevel
-from millionaire.display.animator import AnimationTerminal
+from millionaire.display.animator.tk import TkAnimationTerminal
 from millionaire.display.public import PublicScreen
 from millionaire.exceptions import (
     PerformanceError,
@@ -22,8 +22,8 @@ from millionaire.sound import SoundPlayer
 
 
 class Game:
-    def __init__(self, lang: str = "fr",
-                 milestones: Milestones = Milestones.twelve_balanced(),
+    def __init__(self, lang: str = "en",
+                 milestones: Milestones = Milestones.fifteen(),
                  question_time: int = 180):
         self._lang = lang
         self.milestones = milestones
@@ -50,15 +50,15 @@ class Game:
         with open(QUESTION_FILE, newline='', encoding=encoding) as f:
             reader = csv.reader(f, dialect=csv.excel_tab)
             for row in reader:
-                lvl = QLevel.from_str(row[5])
-                auth = note = None
-                try:
-                    auth = row[6]
-                    note = row[7]
-                except IndexError:
-                    pass
-                quest = Question(lvl, row[0], row[1], *row[2:5],
-                                 author=auth, note=note, lang=self.lang)
+                level = row[5]
+                kws = {}
+                for i, name in enumerate(["author", "note", "publishing_date"]):
+                    try:
+                        value = row[6 + i]
+                    except IndexError:
+                        value = None
+                    kws[name] = value
+                quest = Question(level, row[0], row[1], *row[2:5], lang=self.lang, **kws)
                 self._qdata.append(quest)
 
     def init_question_data(self):
@@ -79,6 +79,7 @@ class Game:
         self._wins = []
         with open(WINNINGS_FILE) as f:
             data = json.load(f)
+        data = data[self.lang]
         self._wins = data["pyramid"][str(self.milestones.end)]
         self._win_unit = data["unit"]
 
@@ -91,13 +92,13 @@ class Game:
         return self._win_unit
 
     def _init_display(self):
-        self._anim_term = AnimationTerminal(self)
+        self._anim_term = TkAnimationTerminal(self)
         self._pub_screen = PublicScreen(self)
         self.main_menu()
         self._anim_term.mainloop()
 
     @property
-    def animation_terminal(self) -> AnimationTerminal:
+    def animation_terminal(self) -> TkAnimationTerminal:
         return self._anim_term
 
     @property
@@ -194,7 +195,7 @@ class Game:
         self._qpicked = []
 
     def load_question(self):
-        self._stop_question_timer()
+        self._run_qtimer = False
         self._pub_answs = -1
         try:
             self._qpick()
@@ -210,22 +211,24 @@ class Game:
     def publish_question(self, n_answers: int = None):
         if n_answers is None:
             n_answers = self._pub_answs + 1
-        pub_qualif_answs = self.in_qualif and n_answers > 0
-        if pub_qualif_answs:
+        if self.in_qualif and n_answers > 0:
             n_answers = 4
         self._pub_answs = max(-1, min(n_answers, 4))
+
+        self._reset_joker_timer()
+        if n_answers > 0 and not self._run_qtimer:
+            self._start_quest_timer()
+        else:
+            self._qcountup = 0
+
         self.animation_terminal.publish_question(self._pub_answs)
         self.public_screen.show(self._pub_answs)
         if not self.sound_player.is_playing_question_stage(self.stage):
             self.sound_player.question()
 
-        self._reset_joker_timer()
-        if not self._run_qtimer:
-            self._start_question_timer()
-
     REFRESH_RATE = int(1000 / 30)
 
-    def _start_question_timer(self, restart: bool = True):
+    def _start_quest_timer(self, restart: bool = True):
         if restart:
             self._run_qtimer = True
             self._qtimestart = time.time()
@@ -238,15 +241,15 @@ class Game:
                 self.public_screen.update_question_timer()
                 self._run_qtimer = False
             else:
-                repeat = lambda: self._start_question_timer(False)
+                repeat = lambda: self._start_quest_timer(False)
                 self.animation_terminal.after(self.REFRESH_RATE, repeat)
-
-    def _stop_question_timer(self):
-        self._run_qtimer = False
 
     @property
     def question_time_progress(self) -> float:
-        return self._qcountup / self.question_timeout
+        try:
+            return self._qcountup / self.question_timeout
+        except AttributeError:
+            return 0
 
     def ask_final_answer(self, index: int):
         self._final_answ_ind = index
@@ -270,7 +273,7 @@ class Game:
             self.public_screen.loss()
 
     def confirm_answer(self):
-        self._stop_question_timer()
+        self._run_qtimer = False
         self.display_reveal_answer()
         if self.question.level != QLevel.TRIVIAL:
             right = self.question.check_answer(self.final_answer_index)
@@ -333,7 +336,7 @@ class Game:
 
     def _start_joker_timer(self, restart: bool = True):
         if restart:
-            self._stop_question_timer()
+            self._run_qtimer = False
             self._run_joktimer = True
             self._joktimestart = time.time()
         if self._run_joktimer:
@@ -345,7 +348,7 @@ class Game:
                 self._qtimestart += self._jokcountup
                 self._jokcountup = 0
                 self._run_qtimer = True
-                self._start_question_timer(False)
+                self._start_quest_timer(False)
             else:
                 repeat = lambda: self._start_joker_timer(False)
                 self.animation_terminal.after(self.REFRESH_RATE, repeat)
@@ -363,13 +366,16 @@ class Game:
             return 0
 
     @property
-    def jokers(self) -> tuple[Joker, ...]:
+    def played_jokers(self) -> tuple:
         try:
-            played = self._played_jokers
-            jokers = self.milestones.allowed_jokers(self.question_num)
-            return tuple(jokers.difference(played))
+            return tuple(self._played_jokers)
         except AttributeError:
             return tuple()
+
+    @property
+    def available_jokers(self) -> tuple[Joker, ...]:
+        jokers = self.milestones.allowed_jokers(self.question_num)
+        return tuple(jokers.difference(self.played_jokers))
 
     def walk_away(self):
         self.sound_player.stop()

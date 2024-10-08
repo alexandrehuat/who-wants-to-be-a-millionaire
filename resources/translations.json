@@ -135,6 +135,10 @@
     "fr": "Auteur",
     "en": "Author"
   },
+  "publishing_date": {
+    "fr": "Date de publication",
+    "en": "Publishing date"
+  },
   "note": {
     "fr": "Note",
     "en": "Note"

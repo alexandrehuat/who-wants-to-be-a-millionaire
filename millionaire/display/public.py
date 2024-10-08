@@ -5,24 +5,23 @@ import tkinter as tk
 from tkinter import font as tf
 
 from millionaire import Joker, Question, QLevel
-from millionaire.display import MillionaireWidget, Theme
+from millionaire.display import MillionaireView, ColorTheme
 
 DUMMY_QUESTION = {
     "fr":
         Question(
-            QLevel.TRIVIAL,
-            "En guise d'échauffement, lequel est l'intrus ?",
-            "Mère",
-            "C'est",
-            "La",
-            "Noire ?",
-            author="Julien Lepers",
-            note="Nous devrions pouvoir écrire « C'est la Mer Noire ? »"
+            QLevel.MEDIUM,
+            "Quelle célèbre réplique fit le buzz sur Facebook en 2017 en réponse à « Mais t'es pas net Baptiste ?! »",
+            "Mais siii, je suis très neeet…",
+            "Mais siii, j'ai mes luneeettes…",
+            "Tu as bonne vue mais pas bon intellect.",
+            "Le son vient de la Benz, le tien vient de la benne.",
+            author="B2O",
         ),
     "en": Question(
-        QLevel.TRIVIAL,
+        QLevel.EASY,
         "As a warm-up, which one is the intruder?",
-        "Is it",
+        "It is",
         "the",
         "Black",
         "See ?",
@@ -32,20 +31,21 @@ DUMMY_QUESTION = {
 }
 
 
-class PublicScreen(MillionaireWidget, tk.Tk):
+class PublicScreen(MillionaireView, tk.Tk):
     FONT_FAMILY = "Luciole"
-    FONT_SIZE = 24
+    FONT_SIZE_NORMAL = 24
+    FONT_SIZE_JOKERS = 22
+    FONT_SIZE_WINNINGS = 20
     QUEST_WRAP_LEN = 76
-    DFT_FRAME_KWS = dict(font=(FONT_FAMILY, FONT_SIZE, tf.ITALIC),
-                         bg=Theme["color"]["bg"])
+    DFT_FRAME_KWS = dict(font=(FONT_FAMILY, FONT_SIZE_NORMAL, tf.ITALIC), bg=ColorTheme["bg"])
     DFT_WIDGET_KWS = (DFT_FRAME_KWS |
-                      dict(font=(FONT_FAMILY, FONT_SIZE, tf.NORMAL),
+                      dict(font=(FONT_FAMILY, FONT_SIZE_NORMAL),
                            justify=tk.LEFT))
     PAD = 8
     DFT_GRID_KWS = dict(sticky="nsew", padx=PAD, pady=PAD)
 
     def __init__(self, game, *args, **kwargs):
-        MillionaireWidget.__init__(self, game)
+        MillionaireView.__init__(self, game)
         tk.Tk.__init__(self, *args, **kwargs)
         self.title(self._ts("public_screen_title"))
         self.config(bg=self.DFT_WIDGET_KWS["bg"])
@@ -54,7 +54,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
 
     @staticmethod
     def _create_expand_frame(master: tk.Widget):
-        return tk.Frame(master, bg=Theme["color"]["bg"])
+        return tk.Frame(master, bg=ColorTheme["bg"])
 
     def _init_frames(self):
         self._main_frame = self._create_expand_frame(self)
@@ -84,7 +84,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         kws["anchor"] = "w"
         for i in range(4):
             self._answs.append(tk.StringVar(expf))
-            kws["highlightbackground"] = Theme["color"]["base"]
+            kws["highlightbackground"] = ColorTheme["base"]
             button = tk.Button(expf, textvariable=self._answs[i], **kws)
             r, c = divmod(i, 2)
             button.grid(column=c, row=1 + r, **self.DFT_GRID_KWS)
@@ -100,7 +100,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         width, height = 240, 2 * self.PAD
         if vertical:
             width, height = height, width
-        canvas = tk.Canvas(master, width=width, height=height, bg=Theme["color"]["bg"])
+        canvas = tk.Canvas(master, width=width, height=height, bg=ColorTheme["bg"])
         fill = 2 ** 16  # Safely large value for filling
         rectangle = canvas.create_rectangle(0, fill, fill, fill)
         return canvas, rectangle
@@ -109,7 +109,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         color = "altbase" if progress < 2 / 3 else "warning" if progress < 1 else "error"
         coords = canvas.coords(rectangle)
         coords[1] = (1 - progress) * canvas.winfo_height()
-        canvas.itemconfig(rectangle, fill=Theme["color"][color])
+        canvas.itemconfig(rectangle, fill=ColorTheme[color])
         canvas.coords(rectangle, *coords)
 
     def update_question_timer(self):
@@ -124,10 +124,11 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         frame = self._create_label_frame("jokers")
         expf = self._create_expand_frame(frame)
         subwids = [self._create_label_frame("classical", expf),
-                     self._create_label_frame("additional", expf)]
+                   self._create_label_frame("additional", expf)]
 
         self._joker_btns = {}
-        kws = self.DFT_WIDGET_KWS | dict(anchor="w", highlightbackground=Theme["color"]["base"])
+        kws = self.DFT_WIDGET_KWS.copy()
+        kws.update(anchor="w", highlightbackground=ColorTheme["base"], font=(self.FONT_FAMILY, self.FONT_SIZE_JOKERS))
         for i, joker in enumerate(Joker):
             column, row = divmod(i, 3)
             text = " ".join(["", self._ts(joker, "icon"), self._ts(joker)])
@@ -151,6 +152,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         self._win_btns = []
         ind_kws = self.DFT_WIDGET_KWS | dict(anchor="c", width=1)
         win_kws = self.DFT_WIDGET_KWS | dict(anchor="w")
+        ind_kws["font"] = win_kws["font"] = (self.FONT_FAMILY, self.FONT_SIZE_WINNINGS)
 
         game = self.game
         unit = game.winnings_unit
@@ -176,7 +178,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
             stage = "safe_net"
         else:
             stage = mstones.stage(index).name.lower()
-        return Theme["color"]["winnings"][stage]
+        return ColorTheme["winnings"][stage]
 
     @staticmethod
     def wrap_text(text: str, length: int):
@@ -209,6 +211,8 @@ class PublicScreen(MillionaireWidget, tk.Tk):
         for i in self.game.joker_indices:
             self._answ_btns[i].config(state=tk.DISABLED)
 
+        self.update_question_timer()
+
     def _show_answers(self, quest: Question, n_answers: int):
         kws = self.DFT_WIDGET_KWS.copy()
         for i, answ in enumerate(quest.mixed_answers):
@@ -219,27 +223,31 @@ class PublicScreen(MillionaireWidget, tk.Tk):
             text = f" ◆ {chr(65 + i)}{self._ts(":")} {answ} "
             text = self.wrap_text(text, self.QUEST_WRAP_LEN // 2)
             self._answs[i].set(text)
-            kws["highlightbackground"] = Theme["color"]["base"]
+            kws["highlightbackground"] = ColorTheme["base"]
             self._answ_btns[i].config(state=state, **kws)
 
     def ask_final_answer(self):
         for button in self._answ_btns:
-            button.config(highlightbackground=Theme["color"]["base"])
+            button.config(highlightbackground=ColorTheme["base"])
         button = self._answ_btns[self.game.final_answer_index]
-        button.config(highlightbackground=Theme["color"]["warning"])
+        button.config(highlightbackground=ColorTheme["warning"])
         self.show_winnings(True)
 
     def reveal_answer(self):
         game = self.game
         colors = {game.final_answer_index: "error", game.question.right_index: "valid"}
         for i, color in colors.items():
-            self._answ_btns[i].config(highlightbackground=Theme["color"][color])
+            self._answ_btns[i].config(highlightbackground=ColorTheme[color])
 
     def show_jokers(self):
         for button in self._joker_btns.values():
-            button.config(state=tk.DISABLED)
-        for joker in self.game.jokers:
+            button.config(state=tk.DISABLED, highlightbackground=ColorTheme["base"])
+        for joker in self.game.available_jokers:
             self._joker_btns[joker].config(state=tk.NORMAL)
+        for joker in self.game.played_jokers:
+            self._joker_btns[joker].config(state=tk.DISABLED, highlightbackground=ColorTheme["altbase"])
+
+        self.update_joker_timer()
 
     def show_winnings(self, final_answer: bool = False):
         n = self.game.question_num
@@ -248,7 +256,7 @@ class PublicScreen(MillionaireWidget, tk.Tk):
                   (self._win_btns[n + 1:], tk.DISABLED, "disabled")]
         for buttons, state, color in config:
             for button in buttons:
-                button.config(state=state, highlightbackground=Theme["color"][color])
+                button.config(state=state, highlightbackground=ColorTheme[color])
 
     def show(self, n_answers: int = 4):
         self.show_question(n_answers)
@@ -267,13 +275,13 @@ class PublicScreen(MillionaireWidget, tk.Tk):
                 color = "error"
             else:
                 color = "base"
-            self._win_btns[i].config(highlightbackground=Theme["color"][color])
+            self._win_btns[i].config(highlightbackground=ColorTheme[color])
 
     def walk_away(self):
         colors = ["altbase"]
         for button in self._answ_btns:
-            button.config(highlightbackground=Theme["color"][colors[0]])
+            button.config(highlightbackground=ColorTheme[colors[0]])
         if (n := self.game.question_num) > 0:
             colors.append("valid")
         for i, color in enumerate(colors):
-            self._win_btns[n - i].config(highlightbackground=Theme["color"][color])
+            self._win_btns[n - i].config(highlightbackground=ColorTheme[color])

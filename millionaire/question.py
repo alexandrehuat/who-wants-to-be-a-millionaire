@@ -1,3 +1,4 @@
+import datetime as dt
 import random
 from enum import IntEnum
 
@@ -23,7 +24,8 @@ class Question(str):
                 *wrong_answers: str,
                 author: str = None,
                 note: str = None,
-                lang: str = "en"):
+                lang: str = "fr",
+                publishing_date: str | dt.date = None):
         return super().__new__(cls, question)
 
     def __init__(self, level: QLevel | int | str,
@@ -32,13 +34,15 @@ class Question(str):
                  *wrong_answers: str,
                  author: str = None,
                  note: str = None,
-                 lang: str = "en"):
-        self._lvl = QLevel(level)
+                 lang: str = "fr",
+                 publishing_date: str | dt.date = None):
+        self._lvl = QLevel.from_str(level) if isinstance(level, str) else QLevel(level)
         self._right_answ = str(right_answer)
         self._wrong_answs = tuple(map(str, wrong_answers))
         self._auth = str(author) if author else ""
         self._note = str(note) if note else ""
         self._lang = lang
+        self.publishing_date = publishing_date
         self.shuffle()
 
     @property
@@ -50,7 +54,7 @@ class Question(str):
         return self._right_answ
 
     @property
-    def wrong_answers(self) -> tuple[str]:
+    def wrong_answers(self) -> tuple[str, ...]:
         return self._wrong_answs
 
     @property
@@ -60,6 +64,27 @@ class Question(str):
     @property
     def note(self) -> str:
         return self._note
+
+    @property
+    def publishing_date(self) -> dt.date:
+        return self._pub_date
+
+    @publishing_date.setter
+    def publishing_date(self, value: str | dt.date | None):
+        if not value:
+            self._pub_date = None
+        elif isinstance(value, str):
+            for sep in "-/.":
+                for codes in ["Ymd", "dmY"]:
+                    try:
+                        fmt = sep.join(f"%{c}" for c in codes)
+                        self._pub_date = dt.datetime.strptime(value, fmt).date()
+                        return
+                    except ValueError:
+                        pass
+            raise ValueError(f"unknown date format for {value!r}")
+        else:
+            self._pub_date = value
 
     def shuffle(self, seed: int = None):
         answers = [self._right_answ, *self._wrong_answs]

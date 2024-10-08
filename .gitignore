@@ -1,5 +1,6 @@
 /data/sound
-/data/questions.tsv
+/data/questions*.tsv
+!/data/questions.samp.tsv
 .DS_Store
 
 # ====================================

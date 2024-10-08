@@ -120,14 +120,10 @@ class Milestones:
         return jokers
 
 
-def translate(key, lang="fr"):
+def translate(key, lang: str = "fr", icon: bool = False):
+    if icon:
+        return translate(key, "icon", False)
     try:
-        opt = TRANSLATIONS[key]
-        for _lang in [lang, "*"]:
-            try:
-                return opt[_lang]
-            except KeyError:
-                pass
-        raise KeyError(f"{key}.{_lang}")
+        return TRANSLATIONS[key][lang]
     except KeyError as e:
-        return repr(e)
+        return f"[{lang}] {key}"
