@@ -1,12 +1,12 @@
 DECIMAL_SEP = {"fr": ",", "en": "."}
-THOUSAND_SEP = {"fr": ["\u202F", "\u00A0", " "], "en": ","}
+THOUSAND_SEPS = {"fr": ["\u202F", "\u00A0", " "], "en": ","}
 
 
 def str_is_int(string: str, lang: str) -> bool:
     if lang is None:
         return any(str_is_num(string, l) for l in DECIMAL_SEP.keys())
 
-    parts = string.strip().split(THOUSAND_SEP[lang][0])
+    parts = string.strip().split(THOUSAND_SEPS[lang][0])
     if len(parts) > 1 \
             and len(parts[0]) > 3 \
             or any(len(part) != 3 for part in parts[1:]):
@@ -44,7 +44,7 @@ def to_num(string: str, lang: str = None, raise_: bool = False) -> int | float |
         if raise_:
             raise ValueError(f"{string} cannot be converted to a number in the supported languages")
         return None
-    for olds, new in [(DECIMAL_SEP, "."), (THOUSAND_SEP, "")]:
+    for olds, new in [(DECIMAL_SEP, "."), (THOUSAND_SEPS, "")]:
         for old in olds[lang]:
             _string = _string.replace(old, new)
     try:
@@ -62,7 +62,7 @@ def format_int(num: int, lang: str) -> str:
     parts = [string[:m]]
     for i in range(m, n, 3):
         parts.append(string[i:i + 3])
-    return THOUSAND_SEP[lang][0].join(parts)
+    return THOUSAND_SEPS[lang][0].join(filter(None, parts))
 
 
 def format_num(num: int | float, unit: str, lang: str) -> str:
@@ -73,8 +73,8 @@ def format_num(num: int | float, unit: str, lang: str) -> str:
             parts[1] = format_int(parts[1][::-1], lang)
     except KeyError:
         raise NotImplementedError(f"unsupported language {lang!r}")
-    string = DECIMAL_SEP[lang].join(parts)
+    numstr = DECIMAL_SEP[lang].join(parts)
     if lang == "fr":
-        return " ".join([string, unit])
+        return f"{numstr} {unit}"
     elif lang == "en":
-        return "".join([unit, string])
+        return f"{unit}{numstr}"
