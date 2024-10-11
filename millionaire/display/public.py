@@ -34,8 +34,8 @@ DUMMY_QUESTION = {
 class PublicScreen(MillionaireView, tk.Tk):
     FONT_FAMILY = "Luciole"
     FONT_SIZE_NORMAL = 24
-    FONT_SIZE_JOKERS = 22
-    FONT_SIZE_WINNINGS = 20
+    FONT_SIZE_JOKERS = 20
+    FONT_SIZE_WINNINGS = 16
     QUEST_WRAP_LEN = 76
     DFT_FRAME_KWS = dict(font=(FONT_FAMILY, FONT_SIZE_NORMAL, tf.ITALIC), bg=ColorTheme["bg"])
     DFT_WIDGET_KWS = (DFT_FRAME_KWS |
