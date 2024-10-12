@@ -12,11 +12,11 @@ DUMMY_QUESTION = {
         Question(
             QLevel.MEDIUM,
             "Quelle célèbre réplique fit le buzz sur Facebook en 2017 en réponse à « Mais t'es pas net Baptiste ?! »",
-            "Mais siii, je suis très neeet…",
-            "Mais siii, j'ai mes luneeettes…",
+            "Mais siii, je suis très neeet.",
+            "Mais siii, j'ai mes luneeettes.",
             "Tu as bonne vue mais pas bon intellect.",
             "Le son vient de la Benz, le tien vient de la benne.",
-            author="B2O",
+            author="B2O"
         ),
     "en": Question(
         QLevel.EASY,
@@ -26,7 +26,7 @@ DUMMY_QUESTION = {
         "Black",
         "See ?",
         author="Julien Lepers",
-        note="We should be able to write 'Is it the Black Sea ?'"
+        note="We should be able to write 'Is it the Black Sea ?'",
     )
 }
 
@@ -108,7 +108,7 @@ class PublicScreen(MillionaireView, tk.Tk):
     def _update_timebar(self, canvas: tk.Canvas, rectangle, progress):
         color = "altbase" if progress < 2 / 3 else "warning" if progress < 1 else "error"
         coords = canvas.coords(rectangle)
-        coords[1] = (1 - progress) * canvas.winfo_height()
+        coords[1] = (1 - progress) * canvas.winfo_reqheight()
         canvas.itemconfig(rectangle, fill=ColorTheme[color])
         canvas.coords(rectangle, *coords)
 

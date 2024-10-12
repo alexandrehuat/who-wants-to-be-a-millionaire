@@ -22,7 +22,7 @@ from millionaire.sound import SoundPlayer
 
 
 class Game:
-    def __init__(self, lang: str = "en",
+    def __init__(self, lang: str = "fr",
                  milestones: Milestones = Milestones.fifteen(),
                  question_time: int = 180):
         self._lang = lang
@@ -44,7 +44,7 @@ class Game:
             if lang == self.lang:
                 self._lang = LANGS[(i + 1) % len(LANGS)]
                 break
-        self.animation_terminal.update_lang()
+        self._init_display()
 
     def _parse_qdata(self, encoding: str = "utf-8"):
         with open(QUESTION_FILE, newline='', encoding=encoding) as f:
@@ -92,8 +92,12 @@ class Game:
         return self._win_unit
 
     def _init_display(self):
-        self._anim_term = TkAnimationTerminal(self)
-        self._pub_screen = PublicScreen(self)
+        for attr, cls in [("_anim_term", TkAnimationTerminal), ("_pub_screen", PublicScreen)]:
+            try:
+                getattr(self, attr).destroy()
+            except AttributeError:
+                pass
+            setattr(self, attr, cls(self))
         self.main_menu()
         self._anim_term.mainloop()
 
@@ -317,6 +321,7 @@ class Game:
         else:
             try:
                 self._played_jokers.add(joker)
+                self._reset_joker_timer()
                 match joker:
                     case Joker.FIFTY:
                         self._play_joker_fifty()
@@ -332,7 +337,7 @@ class Game:
 
     @property
     def joker_timeout(self):
-        return 30  # Ask a friend
+        return 30
 
     def _start_joker_timer(self, restart: bool = True):
         if restart:
@@ -345,7 +350,10 @@ class Game:
             if self._jokcountup >= self.joker_timeout:
                 self._run_joktimer = False
                 self.public_screen.update_joker_timer()
-                self._qtimestart += self._jokcountup
+                try:
+                    self._qtimestart += self._jokcountup
+                except AttributeError:
+                    self._qtimestart = time.time()
                 self._jokcountup = 0
                 self._run_qtimer = True
                 self._start_quest_timer(False)

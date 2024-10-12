@@ -2,8 +2,6 @@ import datetime as dt
 import random
 from enum import IntEnum
 
-from millionaire import util
-
 
 class QLevel(IntEnum):
     TRIVIAL = 0
@@ -88,12 +86,8 @@ class Question(str):
 
     def shuffle(self, seed: int = None):
         answers = [self._right_answ, *self._wrong_answs]
-        num_answs = [util.to_num(answ, self._lang, raise_=False) for answ in answers]
-        if all(answ is not None for answ in num_answs):
-            answers = map(str, sorted(num_answs))
-        else:
-            random.seed(seed)
-            random.shuffle(answers)
+        random.seed(seed)
+        random.shuffle(answers)
         self._mixed_answs = tuple(answers)
 
     @property

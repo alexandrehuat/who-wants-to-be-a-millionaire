@@ -40,12 +40,15 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
         AnimationTerminal.__init__(self, game)
         MillionaireTk.__init__(self, *args, **kwargs)
         self.config(**STYLE)
-        self.set_title()
-        for name, height in [("min", 480), ("max", 720)]:
-            width = int(16 / 9 * height)
-            getattr(self, f"{name}size")(width, height)
+        self._init_size()
+        self._set_title()
 
-    def set_title(self, widget: tk.Widget = None, ts_key: str = "app_title"):
+    def _init_size(self):
+        height = 720
+        width = int(4 * height / 3)
+        self.minsize(width, height)
+
+    def _set_title(self, widget: tk.Widget = None, ts_key: str = "app_title"):
         prefix = "".join(map(self._ts, ["millionaire_short", ":"]))
         if widget is None:
             widget = self
@@ -75,14 +78,11 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
 
     def main_menu(self):
         frame = self._new_page(False)
-        cmds = ["opening", "start_qualif", "start_round", "start_free_game", "closing", "toggle_lang"]
+        cmds = ["opening", "closing", "toggle_lang", "start_qualif", "start_round", "start_free_game"]
         for i, cmd in enumerate(cmds):
+            column, row = divmod(i, 3)
             button = self._create_button(frame, cmd)
-            button.grid(column=0, row=i, **GRID_STYLE)
-
-    def update_lang(self):
-        self.clear()
-        self.main_menu()
+            button.grid(column=column, row=row, **GRID_STYLE)
 
     def start_qualif(self):
         frame, goto_menu = self._new_page(True)
@@ -98,7 +98,7 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
         return tk.Button(master, text=text, command=cmd, **WIN_BTN_STYLE)
 
     def _create_winnings_frame(self, master: tk.Widget) -> tk.LabelFrame:
-        frame = self._create_label_frame(master, "winnings_stake")
+        frame = self._create_label_frame(master, "winnings")
         self._win_btns = []
         mstones = self.game.milestones
         column, row = -1, 0
@@ -125,10 +125,10 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
     def _create_jokers_frame(self, master: tk.Widget) -> tk.LabelFrame:
         frame = self._create_label_frame(master, "jokers")
         self._joker_btns = {}
-        factor = 3
         for i, joker in enumerate(Joker):
             button = self._create_joker_button(frame, joker)
-            button.grid(column=i % factor, row=i // factor, **GRID_STYLE)
+            column, row = divmod(i, 3)
+            button.grid(column=column, row=row, **GRID_STYLE)
             self._joker_btns[joker] = button
         return frame
 
@@ -259,7 +259,8 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
             title = "".join(map(self._ts, [title, ":"]))
             if not value:
                 value = self._ts("no_data")
-            setattr(self, attr, f"{title} {value}")
+            textvar = getattr(self, attr)
+            textvar.set(f"{title} {value}")
 
     def publish_question(self, n_answers: int = -1):
         def getkws(index):
@@ -307,7 +308,7 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
 
         top = tk.Toplevel()
         metatype = "warning" if isinstance(exc, Warning) else "error"
-        self.set_title(top, metatype)
+        self._set_title(top, metatype)
 
         subtype = re.sub("Error|Warning$", "", type_name)
         text = self._ts(subtype)
