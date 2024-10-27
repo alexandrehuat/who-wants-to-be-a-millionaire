@@ -8,7 +8,7 @@ with [Google](https://github-com.translate.goog/alexandrehuat/who-wants-to-be-a-
 Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de devenir millionaire grâce à ce jeu en
 présentiel ou distanciel !
 Ce programme est une reconstruction de la légendaire émission [_Qui veut gagner des
-millions ?_](https://youtu.be/67fDyIkcDz4), développé en Python par Alexandre Huat sous
+millions ?_](https://youtu.be/67fDyIkcDz4), développé en Python sous
 licence [Creative Commons Attribution – Utilisation Non-Commerciale – Partage dans les Mêmes Conditions (CC BY-NC-SA) 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1).
 
 Lisez ce fichier pour installer et utiliser ce jeu correctement.
@@ -87,6 +87,7 @@ En colonne, indiquez de gauche à droite :
   * 4 : extrême, pour la phase de qualifications.
 
 Les colonnes suivantes sont optionnelles :
+
 8. L'auteur de la question
 9. Une note : pour comprendre le contexte ou la réponse.
 10. La date de dernière publication de la question
