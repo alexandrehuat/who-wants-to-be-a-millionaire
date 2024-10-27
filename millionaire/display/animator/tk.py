@@ -59,7 +59,8 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
 
     def _create_button(self, master: tk.Widget, command: str, prefix: str = "", suffix: str = "") -> tk.Button:
         text = prefix + self._ts(command) + suffix
-        return tk.Button(master, text=text, command=getattr(self.game, command), **BTN_STYLE)
+        cmd = getattr(self.game, command)
+        return tk.Button(master, text=text, command=cmd, **BTN_STYLE)
 
     def _new_page(self, goto_menu: bool = True) -> tk.Frame | tuple[tk.Frame, tk.Button]:
         self.clear()
@@ -78,11 +79,12 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
 
     def main_menu(self):
         frame = self._new_page(False)
-        cmds = ["opening", "closing", "toggle_lang", "start_qualif", "start_round", "start_free_game"]
-        for i, cmd in enumerate(cmds):
-            column, row = divmod(i, 3)
-            button = self._create_button(frame, cmd)
-            button.grid(column=column, row=row, **GRID_STYLE)
+        cmds = [["opening", "closing", "toggle_lang", "restart", "quit"],
+                ["start_qualif", "start_round", "start_free_game"]]
+        for column, cmd_row in enumerate(cmds):
+            for row, cmd in enumerate(cmd_row):
+                button = self._create_button(frame, cmd)
+                button.grid(column=column, row=row, **GRID_STYLE)
 
     def start_qualif(self):
         frame, goto_menu = self._new_page(True)
@@ -93,7 +95,7 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
 
     def _create_winnings_button(self, master: tk.Widget, index: int) -> tk.Button:
         win_str = self.format_num(self.game.winnings_pyramid[index], self.game.winnings_unit)
-        text = f" {index + 1}. {win_str}"
+        text = f" {index + 1}. {win_str} "
         cmd = lambda: self.game.set_question_num(index)
         return tk.Button(master, text=text, command=cmd, **WIN_BTN_STYLE)
 
@@ -192,7 +194,7 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
             r, c = divmod(i, 2)
             button.grid(column=c, row=row + r, **GRID_STYLE)
 
-        row += 1
+        row += r + 1
         kws["pady"] = kws["pady"][::-1]
         note.grid(column=0, row=row, **kws)
 
@@ -316,5 +318,5 @@ class TkAnimationTerminal(AnimationTerminal, MillionaireTk):
             text += f"\n\n{msg}"
 
         pad = 2 * self.PAD
-        label = tk.Label(top, text=text, padx=pad, pady=pad)
+        label = tk.Label(top, text=text, padx=pad, pady=pad, bg=ColorTheme[metatype])
         label.pack()

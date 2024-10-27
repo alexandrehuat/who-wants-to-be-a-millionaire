@@ -4,6 +4,7 @@ Mixes the model with the controller in the MVC design pattern.
 """
 
 import csv
+import sys
 import time
 
 from env import QUESTION_FILE, WINNINGS_FILE
@@ -24,16 +25,16 @@ from millionaire.sound import SoundPlayer
 class Game:
     def __init__(self, lang: str = "fr",
                  milestones: Milestones = Milestones.fifteen(),
-                 question_time: int = 180):
+                 question_timeout: int = 180):
         self._lang = lang
         self.milestones = milestones
-        self.question_timeout = question_time
+        self.question_timeout = question_timeout
 
         self.init_question_data()
         self._init_winnings()
         self._soundp = SoundPlayer(self)
         self._init_display()
-        self.start_round()
+        self.main_menu()
 
     @property
     def lang(self) -> str:
@@ -115,6 +116,13 @@ class Game:
     def closing(self):
         self.sound_player.credits(False)
 
+    def restart(self):
+        self.sound_player.stop()
+        self.__init__(self.lang, self.milestones, self._qtimeout)
+
+    def quit(self):
+        sys.exit()
+
     def main_menu(self):
         self.animation_terminal.main_menu()
         self.sound_player.stop()
@@ -181,7 +189,7 @@ class Game:
         self.set_question_num(0, force=True)
 
     def start_free_game(self):
-        raise NotImplementedError("TODO")
+        self.animation_terminal.raise_exc(NotImplementedError)
 
     @property
     def question(self) -> Question | None:

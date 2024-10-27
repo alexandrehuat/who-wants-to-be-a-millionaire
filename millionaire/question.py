@@ -112,3 +112,27 @@ class Question(str):
         Returns true if the index is that of the right answer.
         """
         return self._mixed_answs[index] == self._right_answ
+
+
+DUMMY_QUESTION = {
+    "fr":
+        Question(
+            QLevel.MEDIUM,
+            "Quelle célèbre réplique fit le buzz sur Facebook en 2017 en réponse à « Mais t'es pas net Baptiste ?! »",
+            "Mais siii, je suis très neeet.",
+            "Mais siii, j'ai mes luneeettes.",
+            "Tu as bonne vue mais pas bon intellect.",
+            "Le son vient de la Benz, le tien vient de la benne.",
+            author="B2O"
+        ),
+    "en": Question(
+        QLevel.EASY,
+        "As a warm-up, which one is the intruder?",
+        "It is",
+        "the",
+        "Black",
+        "See…?",
+        author="Julien Lepers",
+        note="We should be able to write 'it is the Black Sea'",
+    )
+}

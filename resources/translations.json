@@ -19,6 +19,14 @@
     "fr": "Générique de fin",
     "en": "Closing credits"
   },
+  "restart": {
+    "fr": "Redémarrer",
+    "en": "Restart"
+  },
+  "quit": {
+    "fr": "Quitter",
+    "en": "Quit"
+  },
   "start_qualif": {
     "fr": "Qualifications",
     "en": "Qualification phase"
@@ -204,5 +212,9 @@
   "JokersDisabledForQLevel": {
     "fr": "Les jokers sont désactivés pour ce niveau de question.",
     "en": "Jokers are disabled for this question level."
+  },
+  "NotImplemented": {
+    "fr": "Désolé, cette fonctionnalité n'est pas implémentée.",
+    "en": "Sorry, this feature is not implemented."
   }
 }

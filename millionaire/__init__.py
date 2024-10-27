@@ -115,7 +115,7 @@ class Milestones:
     def allowed_jokers(self, num: int) -> set[Joker]:
         jokers = set(CLASSICAL_JOKERS)
         for stone, joker in zip(self._data, self._add_jokers):
-            if num > stone:
+            if num >= stone:
                 jokers.add(ADDITIONAL_JOKERS[joker])
         return jokers
 
@@ -126,4 +126,4 @@ def translate(key, lang: str = "fr", icon: bool = False):
     try:
         return TRANSLATIONS[key][lang]
     except KeyError as e:
-        return f"[{lang}] {key}"
+        return f"{lang}: {key}".join("{}")
