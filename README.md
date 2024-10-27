@@ -3,7 +3,10 @@ with [Google](https://github-com.translate.goog/alexandrehuat/who-wants-to-be-a-
 
 # Un _Qui veut gagner des millions ?_ personnalisé en Python pour jouer entre amis
 
-<img src="https://www.programme-tv.net/imgre/fit/http.3A.2F.2Fprd2-bone-image.2Es3-website-eu-west-1.2Eamazonaws.2Ecom.2FTEL.2Enews.2F2018.2F01.2F11.2F2b2ee87e-96a0-4a8a-9644-7b8e02f531a8.2Ejpeg/900x506/quality/70/jean-pierre-foucault-va-a-son-tour-tenter-de-gagner-des-millions.jpg" style="max-height: 360px; border: 1px solid skyblue; border-radius: 1em">
+<img
+src="https://www.programme-tv.net/imgre/fit/http.3A.2F.2Fprd2-bone-image.2Es3-website-eu-west-1.2Eamazonaws.2Ecom.2FTEL.2Enews.2F2018.2F01.2F11.2F2b2ee87e-96a0-4a8a-9644-7b8e02f531a8.2Ejpeg/900x506/quality/70/jean-pierre-foucault-va-a-son-tour-tenter-de-gagner-des-millions.jpg"
+alt="Jean-Pierre Foucault devant le logo du jeu Qui veut gagner des millions ?"
+style="max-height: 360px; border: 1px solid skyblue; border-radius: 1em;">
 
 Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de devenir millionaire grâce à ce jeu en
 présentiel ou distanciel !
