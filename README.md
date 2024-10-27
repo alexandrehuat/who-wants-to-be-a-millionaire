@@ -1,7 +1,9 @@
 🌐 _Translate me from French
 with [Google](https://github-com.translate.goog/alexandrehuat/who-wants-to-be-a-millionaire/tree/main?_x_tr_sl=fr&_x_tr_tl=de&_x_tr_hl=fr&_x_tr_pto=wapp)!_
 
-# _Qui veut gagner des millions ?_ personnalisé en Python pour jouer entre amis
+# Un _Qui veut gagner des millions ?_ personnalisé en Python pour jouer entre amis
+
+<img src="https://www.programme-tv.net/imgre/fit/http.3A.2F.2Fprd2-bone-image.2Es3-website-eu-west-1.2Eamazonaws.2Ecom.2FTEL.2Enews.2F2018.2F01.2F11.2F2b2ee87e-96a0-4a8a-9644-7b8e02f531a8.2Ejpeg/900x506/quality/70/jean-pierre-foucault-va-a-son-tour-tenter-de-gagner-des-millions.jpg" style="max-height: 360px; border: 1px solid skyblue; border-radius: 1em">
 
 Incarnez Jean-Pierre Foucault et invitez vos amis ou collègues à tenter de devenir millionaire grâce à ce jeu en
 présentiel ou distanciel !
@@ -126,8 +128,20 @@ Une fois décidé, il doit cliquer plusieurs fois sur le bouton <kbd>Publier</kb
 Si le joueur répond juste, l'animateur clique sur le bouton <kbd>Suivant</kbd> et le processus recommence.
 L'animateur peut aussi forcer le numéro de question en le sélectionnant directement sur le terminal d'animation.
 
-Le joueur peut aussi abandonner (bouton <kbd>Abandonner</kbd>), ce qui conserve ses gains.
-S'il perd, ses gains descendent au précédent palier.
+Le joueur peut aussi abandonner (bouton <kbd>Abandonner</kbd>) plutôt que de prendre le risque de mal répondre.
+
+#### Pyramide des gains
+
+Le numéro de question détermine la difficulté de la question, de facile à difficile selon que l'on est avant le premier palier, après le premier palier, ou après le second.
+Les questions triviales peuvent être posées à n'importe quel moment.
+
+Plusieurs pyramides de gains sont codées :
+* **15 :** 15 questions avec les paliers à la 5ème et la 10ème question.
+* **12 classique :** 12 questions avec les paliers à la 2ème et la 7ème question.
+* **12 équilibrée :** 12 questions avec les paliers à la 4ème et la 8ème question.
+
+Une défaite à une question ramène les gains au dernier palier passé (0 si aucun).
+Un abandon conserve les gains acquis.
 
 #### Jokers
 
@@ -193,5 +207,7 @@ python -m millionaire
 
 ### Configuration
 
-Pour le moment, la configuration du jeu ne peut être gérée qu'en éditant directement le code du module [`millionaire.game`](millionaire/game.py).
-Consultez les paramètres du constructeur de la classe `Game`.
+L'animateur peut configurer la langue, la pyramide des gains, la durée des différents minuteurs, etc.
+
+Pour le moment, certaines configurations ne peut être gérée qu'en éditant directement le code du module [`millionaire.game`](millionaire/game.py),
+notamment les valeurs par défaut du constructeur de la classe `Game`.
