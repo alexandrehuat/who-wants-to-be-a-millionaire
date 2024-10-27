@@ -1,2 +1,2 @@
 # python:3.12
-pygame==2.6.0
+pygame==2.6.1
