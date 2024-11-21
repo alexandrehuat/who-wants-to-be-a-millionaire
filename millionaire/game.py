@@ -24,7 +24,7 @@ from millionaire.sound import SoundPlayer
 
 class Game:
     def __init__(self, lang: str = "fr",
-                 milestones: Milestones = Milestones.fifteen(),
+                 milestones: Milestones = Milestones.twelve_balanced(),
                  question_timeout: int = 180):
         self._lang = lang
         self.milestones = milestones
@@ -48,9 +48,10 @@ class Game:
         self._init_display()
 
     def _parse_qdata(self, encoding: str = "utf-8"):
-        with open(QUESTION_FILE, newline='', encoding=encoding) as f:
+        with open(QUESTION_FILE, newline='', encoding=encoding, errors='replace') as f:
             reader = csv.reader(f, dialect=csv.excel_tab)
             for row in reader:
+                row = [cell.encode(encoding).decode("utf-8") for cell in row]
                 level = row[5]
                 kws = {}
                 for i, name in enumerate(["author", "note", "publishing_date"]):
@@ -64,7 +65,7 @@ class Game:
 
     def init_question_data(self):
         self._qdata = []
-        for encoding in ["utf-8", "utf-16", "latin1"]:
+        for encoding in ["utf-8", "utf-16", "latin-1"]:
             try:
                 self._parse_qdata(encoding)
             except UnicodeError:
